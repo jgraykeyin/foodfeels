@@ -8,11 +8,24 @@ current_date = date.today()
 window = tk.Tk()
 window.title("Food Feels")
 
+def load_from_file():
+    filename = "foodfeels_{}.txt".format(current_date.strftime("%Y%m%d"))
+    try:
+        file = open(filename, "r")
+        file_data = file.readlines()
+        for line in file_data:
+            food_list.insert(tk.END, line)
+        file.close()
+    except:
+        print("No file found, not loading any data")
+
+
 def save_to_file():
     filename = "foodfeels_{}.txt".format(current_date.strftime("%Y%m%d"))
     file = open(filename, "w")
     items = food_list.get(0, tk.END)
     for i in items:
+        i = i.strip("\n")
         file.write(i + "\n")
     file.close()
     save_label["text"] = "Saved to file {}".format(filename)
@@ -41,6 +54,9 @@ def update_feels(msg):
     food_list.insert(cur_item, item_feel)
     toggle_dropdown_items("disable")
 
+    # Auto save to file
+    save_to_file()
+
 
 # Remove an item from the food list
 def remove_list_item():
@@ -49,13 +65,31 @@ def remove_list_item():
 
     toggle_dropdown_items("disable")
 
+    # Make sure to auto-save
+    save_to_file()
+
 
 # Function that triggers each time an item is selected
 def list_item_selected(msg):
-    item_remove_button["state"] = "normal"
 
+    # Make sure to enable all the options for selected item
+    item_remove_button["state"] = "normal"
     toggle_dropdown_items("normal")
-    feels_selection.set(feels_list[0])
+    feels_dropdown.configure(state="normal")
+
+    # Check to see if a feeling is already set on an item and match it with the dropdown
+    cur_item = food_list.curselection()
+    item = food_list.get(cur_item)
+
+    if "::" in item:
+        item_split = item.split("::")
+        feel_index = item_split[1].strip("\n")
+        feel_index = feel_index.strip(" ")
+        feel = feels_list.index(feel_index)
+        feels_selection.set(feels_list[feel])
+    else:
+        feels_selection.set(feels_list[0])
+
 
 
 # Function to add items into our food list for the day
@@ -71,6 +105,9 @@ def add_food_item():
         food_list.select_set(tk.END)
         list_item_selected(tk.END)
         food_list.event_generate("<<ListboxSelect>>")
+
+        # Auto-save to file once the item is added
+        save_to_file()
 
     else:
         showinfo("Invalid Entry", "Please enter a food or drink item")
@@ -110,6 +147,9 @@ food_list = tk.Listbox(item_list_frame, listvariable=food_list_data, selectmode=
 food_list.bind("<<ListboxSelect>>", list_item_selected)
 item_remove_button = tk.Button(item_list_frame, text="Remove Item", state="disable", command=remove_list_item)
 
+# Check for saved data for the current day and load it into our list
+load_from_file()
+
 # Elements for setting the feels for an item
 feels_label = tk.Label(feels_frame, text="How did you feel after eating this?", state="disable")
 feels_list = [' ','Terrible', 'Not Good', 'Okay', 'Wonderful']
@@ -121,7 +161,8 @@ for i in range(entries+1):
      feels_dropdown['menu'].entryconfig(i, state='disable')
 
 # Elements for the footer frame
-save_button = tk.Button(footer_frame, text="Save Current Day", command=save_to_file)
+# Started with a save button, but I think auto-save will work better.
+#save_button = tk.Button(footer_frame, text="Save Current Day", command=save_to_file)
 save_label = tk.Label(footer_frame, text="")
 
 # Grid placements for the header
@@ -141,7 +182,7 @@ feels_label.grid(row=0, column=0, padx=6, pady=6, sticky="W")
 feels_dropdown.grid(row=1, column=0, padx=6, pady=6, sticky="WE")
 
 # Grid placements for the footer items
-save_button.grid(row=0, column=0, padx=6, pady=6)
-save_label.grid(row=1, column=0, padx=6, pady=6)
+#save_button.grid(row=0, column=0, padx=6, pady=6)
+save_label.grid(row=0, column=0, padx=6, pady=6)
 
 window.mainloop()
