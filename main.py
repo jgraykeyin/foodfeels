@@ -9,7 +9,7 @@ window = tk.Tk()
 window.title("Food Feels")
 
 def save_to_file():
-    filename = "foodfeels_{}.txt".format(current_date)
+    filename = "foodfeels_{}.txt".format(current_date.strftime("%Y%m%d"))
     file = open(filename, "w")
     items = food_list.get(0, tk.END)
     for i in items:
