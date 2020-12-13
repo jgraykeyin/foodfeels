@@ -8,6 +8,16 @@ current_date = date.today()
 window = tk.Tk()
 window.title("Food Feels")
 
+def save_to_file():
+    filename = "foodfeels_{}.txt".format(current_date)
+    file = open(filename, "w")
+    items = food_list.get(0, tk.END)
+    for i in items:
+        file.write(i + "\n")
+    file.close()
+    save_label["text"] = "Saved to file {}".format(filename)
+
+
 def toggle_dropdown_items(msg):
 
     entries = feels_dropdown['menu'].index('end')
@@ -77,6 +87,7 @@ header_frame = tk.Frame(window)
 item_input_frame = tk.LabelFrame(window, text="Your Food")
 item_list_frame = tk.Frame(window)
 feels_frame = tk.LabelFrame(window, text="Your Feels")
+footer_frame = tk.Frame(window)
 
 
 # Grid placements for our frames
@@ -84,6 +95,7 @@ header_frame.grid(row=0, column=0, padx=10, pady=10)
 item_input_frame.grid(row=1, column=0, padx=10, pady=10, sticky="NS")
 item_list_frame.grid(row=2, column=0, padx=10, pady=10)
 feels_frame.grid(row=3, column=0, padx=10, pady=10, sticky="N")
+footer_frame.grid(row=4, column=0, padx=10, pady=10)
 
 # Elements for the header section
 header_label = tk.Label(header_frame, text="Your food feels journal for {}".format(current_date))
@@ -108,6 +120,10 @@ entries = feels_dropdown['menu'].index('end')
 for i in range(entries+1):
      feels_dropdown['menu'].entryconfig(i, state='disable')
 
+# Elements for the footer frame
+save_button = tk.Button(footer_frame, text="Save Current Day", command=save_to_file)
+save_label = tk.Label(footer_frame, text="")
+
 # Grid placements for the header
 header_label.grid(row=0, column=0, padx=6, pady=6, sticky="W")
 
@@ -123,5 +139,9 @@ item_remove_button.grid(row=1, column=0, sticky="E", padx=6, pady=6)
 # Grid placements for the feelings inputs
 feels_label.grid(row=0, column=0, padx=6, pady=6, sticky="W")
 feels_dropdown.grid(row=1, column=0, padx=6, pady=6, sticky="WE")
+
+# Grid placements for the footer items
+save_button.grid(row=0, column=0, padx=6, pady=6)
+save_label.grid(row=1, column=0, padx=6, pady=6)
 
 window.mainloop()
